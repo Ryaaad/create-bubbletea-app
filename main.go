@@ -230,6 +230,4 @@ golang.org/x/text v0.3.8/go.mod h1:E6s5w1FMmriuDzIBO73fBruAKo1PCIq6d2Q6DHfQ8WQ=
 }
 func main() {
 	CreateProjet()
-	// args := os.Args[1:]
-	// fmt.Print(args[0])
 }
