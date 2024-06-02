@@ -10,21 +10,46 @@ type ChangedContent struct {
 	View string
 }
 
-func Create() {
+func createFile(path string, tmpl *template.Template, data interface{}) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("error creating the file %s: %w", path, err)
+	}
+	defer file.Close()
+
+	if err := tmpl.Execute(file, data); err != nil {
+		return fmt.Errorf("error executing template for %s: %w", path, err)
+	}
+
+	return nil
+}
+
+func validateParams() ([]string, string) {
+	Args := os.Args[1:]
+	params := []string{"Bibble_tea_app", ""}
+	ArgsErr := ""
+	if Args[0] != " " {
+		params[0] = Args[0]
+	}
+
+	return params, ArgsErr
+}
+func CreateProjet() {
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error getting working directory:", err)
 		return
 	}
-	path := cwd
-	path += "/Bubble"
-
-	PathError := os.Mkdir(path, os.ModePerm)
-	if PathError != nil {
-		fmt.Println("Err creating the directory :", PathError.Error())
-	} else {
-		go_main_Content :=
-			`
+	params, ArgsErr := validateParams()
+	if ArgsErr == "" {
+		path := cwd
+		path += "/" + params[0]
+		PathError := os.Mkdir(path, os.ModePerm)
+		if PathError != nil {
+			fmt.Println("Err creating the directory :", PathError.Error())
+		} else {
+			go_main_Content :=
+				`
 package main
 
 import (
@@ -110,9 +135,9 @@ func (m model) View() string {
 		}		
 		
 `
-		go_module_content :=
-			`
-module Ryaaad
+			go_module_content :=
+				`
+module bubbleteaapp
 
 go 1.22.3
 
@@ -136,9 +161,8 @@ require (
 )
 
 `
-		go_sum_content :=
-			`
-github.com/charmbracelet/bubbletea v0.26.4 h1:2gDkkzLZaTjMl/dQBpNVtnvcCxsh/FCkimep7FC9c40=
+			go_sum_content :=
+				`github.com/charmbracelet/bubbletea v0.26.4 h1:2gDkkzLZaTjMl/dQBpNVtnvcCxsh/FCkimep7FC9c40=
 github.com/charmbracelet/bubbletea v0.26.4/go.mod h1:P+r+RRA5qtI1DOHNFn0otoNwB4rn+zNAzSj/EXz6xU0=
 github.com/charmbracelet/x/ansi v0.1.2 h1:6+LR39uG8DE6zAmbu023YlqjJHkYXDF1z36ZwzO4xZY=
 github.com/charmbracelet/x/ansi v0.1.2/go.mod h1:dk73KoMTT5AX5BsX0KrqhsTqAnhZZoCBjs7dGWp4Ktw=
@@ -172,51 +196,40 @@ golang.org/x/text v0.3.8 h1:nAL+RVCQ9uMn3vJZbV+MRnydTJFPf8qqY42YiA6MrqY=
 golang.org/x/text v0.3.8/go.mod h1:E6s5w1FMmriuDzIBO73fBruAKo1PCIq6d2Q6DHfQ8WQ=
 
 `
-		Nostyle := ChangedContent{"Style"}
-		mainGOtmplt, err := template.New("main.go").Parse(go_main_Content)
-		if err != nil {
-			panic(err)
-		}
-		goModtmplt, err := template.New("go.mod").Parse(go_module_content)
-		if err != nil {
-			panic(err)
-		}
-		goSumtmplt, err := template.New("go.sum").Parse(go_sum_content)
-		if err != nil {
-			panic(err)
-		}
-		maingoPath := path + "/main.go"
-		mainfile, Error := os.Create(maingoPath)
-		if Error != nil {
-			fmt.Print("Err creating the file : ", Error)
-		} else {
-			err = mainGOtmplt.Execute(mainfile, Nostyle)
+			Nostyle := ChangedContent{"Style"}
+			mainGOtmplt, err := template.New("main.go").Parse(go_main_Content)
 			if err != nil {
 				panic(err)
 			}
-		}
-		modgoPath := path + "/go.mod"
-		modfile, Error := os.Create(modgoPath)
-		if Error != nil {
-			fmt.Print("Err creating the file : ", Error)
-		} else {
-			err = goModtmplt.Execute(modfile, nil)
+			goModtmplt, err := template.New("go.mod").Parse(go_module_content)
 			if err != nil {
 				panic(err)
 			}
-		}
-		gosumPath := path + "/go.sum"
-		sumfile, Error := os.Create(gosumPath)
-		if Error != nil {
-			fmt.Print("Err creating the file : ", Error)
-		} else {
-			err = goSumtmplt.Execute(sumfile, nil)
+			goSumtmplt, err := template.New("go.sum").Parse(go_sum_content)
 			if err != nil {
 				panic(err)
+			}
+			maingoPath := path + "/main.go"
+			Err := createFile(maingoPath, mainGOtmplt, Nostyle)
+			if Err != nil {
+				fmt.Print("Err creating the main go file : ", Err)
+			}
+			modgoPath := path + "/go.mod"
+			Err = createFile(modgoPath, goModtmplt, nil)
+
+			if Err != nil {
+				fmt.Print("Err creating the go.mod file : ", Err)
+			}
+			gosumPath := path + "/go.sum"
+			Err = createFile(gosumPath, goSumtmplt, nil)
+			if Err != nil {
+				fmt.Print("Err creating the go.sum file : ", Err)
 			}
 		}
 	}
 }
 func main() {
-	Create()
+	CreateProjet()
+	// args := os.Args[1:]
+	// fmt.Print(args[0])
 }
