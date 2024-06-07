@@ -44,19 +44,18 @@ func validateParams() ([]string, string) {
 	}
 	return params, ArgsErr
 }
-func CreateProjet() {
+func CreateProjet() error {
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println("Error getting working directory:", err)
-		return
+		return err
 	}
 	params, ArgsErr := validateParams()
 	if ArgsErr == "" {
 		path := cwd
 		path += "/" + params[0]
-		PathError := os.Mkdir(path, os.ModePerm)
-		if PathError != nil {
-			fmt.Println("Err creating the directory :", PathError.Error())
+		pathError := os.Mkdir(path, os.ModePerm)
+		if pathError != nil {
+			return fmt.Errorf("err creating the directory : %w", pathError)
 		} else {
 			go_main_Content :=
 				`package main
@@ -328,35 +327,39 @@ golang.org/x/text v0.3.8/go.mod h1:E6s5w1FMmriuDzIBO73fBruAKo1PCIq6d2Q6DHfQ8WQ=
 
 			mainGOtmplt, err := template.New("main.go").Parse(go_main_Content)
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("error creating the main go template: %w", err)
 			}
 			goModtmplt, err := template.New("go.mod").Parse(go_module_content)
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("error creating the go.mod template: %w", err)
 			}
 			goSumtmplt, err := template.New("go.sum").Parse(go_sum_content)
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("error creating the sum go template: %w", err)
 			}
 			maingoPath := path + "/main.go"
 			Err := createFile(maingoPath, mainGOtmplt, Nostyle)
 			if Err != nil {
-				fmt.Print("Err creating the main go file : ", Err)
+				return fmt.Errorf("error creating the main go file: %w", Err)
+
 			}
 			modgoPath := path + "/go.mod"
 			Err = createFile(modgoPath, goModtmplt, nil)
 
 			if Err != nil {
-				fmt.Print("Err creating the go.mod file : ", Err)
+				return fmt.Errorf("error creating the mod go file: %w", Err)
 			}
 			gosumPath := path + "/go.sum"
 			Err = createFile(gosumPath, goSumtmplt, nil)
 			if Err != nil {
-				fmt.Print("Err creating the go.sum file : ", Err)
+				return fmt.Errorf("error creating the sum go file: %w", Err)
 			}
 		}
 	}
+	return nil
 }
 func main() {
-	CreateProjet()
+	if err := CreateProjet(); err != nil {
+		fmt.Println("Error creating project:", err)
+	}
 }
