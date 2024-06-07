@@ -59,8 +59,7 @@ func CreateProjet() {
 			fmt.Println("Err creating the directory :", PathError.Error())
 		} else {
 			go_main_Content :=
-				`
-package main
+				`package main
 
 {{.Imports}}
 
@@ -103,22 +102,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		
 {{.View}}
 		
-		func initialModel() model {
-			return model{
-				board:  []string{"A", "B", "C"},
-				cursor: 0,
-			}
-		}
+func initialModel() model {
+	return model{
+		board:  []string{"A", "B", "C"},
+		cursor: 0,
+	}
+}
 		
-		func main() {
-			p := tea.NewProgram(initialModel())
-			if _, err := p.Run(); err != nil {
-				fmt.Printf("Alas, there's been an error: %v", err)
-				os.Exit(1)
-			}
-		}		
-		
-`
+func main() {
+	p := tea.NewProgram(initialModel())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
+}`
 			go_module_content :=
 				`module bubbleteaapp
 
